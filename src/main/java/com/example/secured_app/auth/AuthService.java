@@ -26,7 +26,7 @@ public class AuthService implements UserDetailsService {
     }
 
     void register(Account account){
-        if (accountJpaRepository.existsByLogin(account.getLogin())) {
+        if (accountJpaRepository.existsByEmail(account.getEmail())) {
             throw new IllegalArgumentException("Login już zajęty");
         }
         if (isValidPassword(account.getPassword())) {
@@ -42,9 +42,9 @@ public class AuthService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account account = accountJpaRepository.findByLogin(username)
+        Account account = accountJpaRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Not found"));
-        return User.withUsername(account.getLogin())
+        return User.withUsername(account.getEmail())
                 .password(account.getPassword())
                 .roles("USER")
                 .build();

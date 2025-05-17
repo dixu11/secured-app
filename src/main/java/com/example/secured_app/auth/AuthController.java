@@ -47,15 +47,15 @@ public class AuthController {
     public String getHomePage(@RequestParam(required = false) String message,
                               Model model) {
         model.addAttribute("message",message);
-        provideLogin(model);
+        provideEmail(model);
         return "index";
     }
 
-    private void provideLogin(Model model){
+    private void provideEmail(Model model){
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof User) {
             User user = (User) principal;
-            model.addAttribute("login", user.getUsername());
+            model.addAttribute("email", user.getUsername());
         }
     }
 }

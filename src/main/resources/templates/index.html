@@ -7,20 +7,19 @@
 <body>
 <div th:if="${message}"
      th:text="${message}"></div>
-<div th:if="${login}"
-     th:text="${'Zalogowany jako: ' + login}"></div>
-<div th:unless="${login}">Nie zalogowany</div>
+<div th:if="${email}"
+     th:text="${'Zalogowany jako: ' + email}"></div>
+<div th:unless="${email}">Nie zalogowany</div>
 
-<div th:unless="${login}">
+<div th:unless="${email}">
     <a href="/register">Zarejestruj nowe konto</a>
 </div>
-<div th:unless="${login}">
+<div th:unless="${email}">
     <a href="/login">Zaloguj się</a>
 </div>
-<div th:if="${login}">
+<div th:if="${email}">
     <a href="/logout">Wyloguj się</a>
 </div>
-
 <a href="/h2-console">Konsola bazy danych</a>
 </body>
 </html>

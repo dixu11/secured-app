@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .headers(customizer -> customizer.disable())
                 .formLogin(form -> form.loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .usernameParameter("login")
+                        .usernameParameter("email")
                         .passwordParameter("password")
                         .defaultSuccessUrl("/",true)
                         .failureUrl("/login?error=true")
