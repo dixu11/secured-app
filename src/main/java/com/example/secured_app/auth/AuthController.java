@@ -24,6 +24,23 @@ public class AuthController {
         return "register";
     }
 
+    @GetMapping("/change")
+    public String getPasswordChangePage(){
+        return "change-password";
+    }
+
+    @PostMapping("/change")
+    public String changePassword(@ModelAttribute Account account, RedirectAttributes redirectAttributes, Model model) {
+        try {
+            authService.changePassword(account);
+            redirectAttributes.addAttribute("message", "Na podany mail został wysłany link do zmiany hasła");
+            return "redirect:/";
+        }catch (IllegalArgumentException e){
+            model.addAttribute("message", e.getMessage());
+            return "register";
+        }
+    }
+
     @PostMapping("/register")
     public String postAccount(@ModelAttribute Account account, RedirectAttributes redirectAttributes, Model model) {
         try {
