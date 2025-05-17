@@ -20,6 +20,8 @@ public class AuthService implements UserDetailsService {
     private ChangePasswordJpaRepository changePasswordJpaRepository;
     private EmailService emailService;
 
+    private static final String WRONG_PASSWORD = "Hasło nie spełnia wymogów: minimum 1 mała litera, 1 specjalny znak, jedna cyfra długość od 8 do 20 znaków.";
+
     @Value("${your.domain}")
     private String domain;
 
@@ -41,8 +43,8 @@ public class AuthService implements UserDetailsService {
         if (accountJpaRepository.existsByEmail(account.getEmail())) {
             throw new IllegalArgumentException("Login już zajęty");
         }
-        if (isValidPassword(account.getPassword())) {
-            throw new IllegalArgumentException("Hasło nie spełnia wymogów");
+        if (!isValidPassword(account.getPassword())) {
+            throw new IllegalArgumentException(WRONG_PASSWORD);
         }
         account.setPassword(passwordEncoder.encode(account.getPassword()));
         accountJpaRepository.save(account);
@@ -51,8 +53,8 @@ public class AuthService implements UserDetailsService {
     @Transactional
     public void changePassword(Account account) {
         //don't check if mail exists for safety reasons
-        if (isValidPassword(account.getPassword())) {
-            throw new IllegalArgumentException("Hasło nie spełnia wymogów");
+        if (!isValidPassword(account.getPassword())) {
+            throw new IllegalArgumentException(WRONG_PASSWORD);
         }
         changePasswordJpaRepository.findByEmail(account.getEmail())
                 .ifPresent(changePassword -> {
