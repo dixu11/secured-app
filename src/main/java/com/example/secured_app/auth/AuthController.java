@@ -4,10 +4,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -25,7 +22,7 @@ public class AuthController {
     }
 
     @GetMapping("/change")
-    public String getPasswordChangePage(){
+    public String getPasswordChangePage() {
         return "change-password";
     }
 
@@ -35,10 +32,23 @@ public class AuthController {
             authService.changePassword(account);
             redirectAttributes.addAttribute("message", "Na podany mail został wysłany link do zmiany hasła");
             return "redirect:/";
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             model.addAttribute("message", e.getMessage());
             return "register";
         }
+    }
+
+    @GetMapping("/change/{id}")
+    public String change(@PathVariable String id, RedirectAttributes redirectAttributes) {
+        try {
+            authService.changePassword(id);
+            redirectAttributes.addAttribute("message", "hasło zmienione poprawnie");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addAttribute("message", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addAttribute("message", "Coś poszło nie tak");
+        }
+        return "redirect:/";
     }
 
     @PostMapping("/register")
@@ -63,12 +73,12 @@ public class AuthController {
     @GetMapping
     public String getHomePage(@RequestParam(required = false) String message,
                               Model model) {
-        model.addAttribute("message",message);
+        model.addAttribute("message", message);
         provideEmail(model);
         return "index";
     }
 
-    private void provideEmail(Model model){
+    private void provideEmail(Model model) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof User) {
             User user = (User) principal;

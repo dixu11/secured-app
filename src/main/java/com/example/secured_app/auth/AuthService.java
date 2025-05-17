@@ -71,4 +71,17 @@ public class AuthService implements UserDetailsService {
                 .roles("USER")
                 .build();
     }
+
+    @Transactional
+    public void changePassword(String id) {
+        ChangePassword changePassword = changePasswordJpaRepository.findById(id).orElseThrow();
+        if (changePassword.expired()) {
+            changePasswordJpaRepository.delete(changePassword);
+            throw new IllegalArgumentException("Token zmiany hasła wygasł");
+        }
+        Account account = accountJpaRepository.findByEmail(changePassword.getEmail()).orElseThrow();
+        account.setPassword(changePassword.getNewPassword());
+        accountJpaRepository.save(account);
+        changePasswordJpaRepository.delete(changePassword);
+    }
 }
