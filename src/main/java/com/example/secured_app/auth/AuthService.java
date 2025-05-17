@@ -1,6 +1,8 @@
 package com.example.secured_app.auth;
 
+import com.example.secured_app.common.EmailService;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,6 +18,10 @@ public class AuthService implements UserDetailsService {
     private PasswordEncoder passwordEncoder;
     private AccountJpaRepository accountJpaRepository;
     private ChangePasswordJpaRepository changePasswordJpaRepository;
+    private EmailService emailService;
+
+    @Value("${your.domain}")
+    private String domain;
 
     private static final String PASSWORD_REGEX =
             "^(?=.*[a-z])" +          // minimum 1 small letter
@@ -24,10 +30,11 @@ public class AuthService implements UserDetailsService {
                     "(?=.*[!@#$%^&*()\\-_=+{};:,<.>])" +  // 1 special sign
                     "[A-Za-z\\d!@#$%^&*()\\-_=+{};:,<.>]{8,20}$"; //allowed signs and length
 
-    public AuthService(PasswordEncoder passwordEncoder, AccountJpaRepository accountJpaRepository, ChangePasswordJpaRepository changePasswordJpaRepository) {
+    public AuthService(PasswordEncoder passwordEncoder, AccountJpaRepository accountJpaRepository, ChangePasswordJpaRepository changePasswordJpaRepository, EmailService emailService) {
         this.passwordEncoder = passwordEncoder;
         this.accountJpaRepository = accountJpaRepository;
         this.changePasswordJpaRepository = changePasswordJpaRepository;
+        this.emailService = emailService;
     }
 
     void register(Account account) {
@@ -55,7 +62,10 @@ public class AuthService implements UserDetailsService {
                         changePasswordJpaRepository.delete(changePassword);
                     }
                 });
-        changePasswordJpaRepository.save(new ChangePassword(account.getEmail(), passwordEncoder.encode(account.getPassword())));
+        ChangePassword changed = changePasswordJpaRepository.save(new ChangePassword(account.getEmail(), passwordEncoder.encode(account.getPassword())));
+        String message = "Link do zmiany hasła: <a href=\"https://" +domain + "/change/" + changed.getId() +
+                "\"> kliknij aby zmienić hasło</a>";
+        emailService.sendHtmlEmail(account.getEmail(),"Zmiana hasła", message);
     }
 
     private boolean isValidPassword(String password) {
