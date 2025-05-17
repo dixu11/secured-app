@@ -1,5 +1,7 @@
 package com.example.secured_app.auth;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,16 +43,19 @@ public class AuthController {
         return "login";
     }
 
-    @GetMapping("/logout")
-    public String getLogoutPage() {
-        return "login";
-    }
-
     @GetMapping
     public String getHomePage(@RequestParam(required = false) String message,
                               Model model) {
         model.addAttribute("message",message);
+        provideLogin(model);
         return "index";
     }
 
+    private void provideLogin(Model model){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User) {
+            User user = (User) principal;
+            model.addAttribute("login", user.getUsername());
+        }
+    }
 }

@@ -1,10 +1,14 @@
 package com.example.secured_app.auth;
 
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AuthService {
+public class AuthService implements UserDetailsService {
 
     private PasswordEncoder passwordEncoder;
     private AccountJpaRepository accountJpaRepository;
@@ -25,7 +29,7 @@ public class AuthService {
         if (accountJpaRepository.existsByLogin(account.getLogin())) {
             throw new IllegalArgumentException("Login już zajęty");
         }
-        if (!isValidPassword(account.getPassword())) {
+        if (isValidPassword(account.getPassword())) {
             throw new IllegalArgumentException("Hasło nie spełnia wymogów");
         }
         account.setPassword(passwordEncoder.encode(account.getPassword()));
@@ -34,5 +38,15 @@ public class AuthService {
 
     private boolean isValidPassword(String password) {
         return password != null && password.matches(PASSWORD_REGEX);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Account account = accountJpaRepository.findByLogin(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Not found"));
+        return User.withUsername(account.getLogin())
+                .password(account.getPassword())
+                .roles("USER")
+                .build();
     }
 }
