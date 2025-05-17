@@ -21,6 +21,21 @@ public class EmailService {
     }
 
     //@PostConstruct
+    @Async
+    public void sendHtmlEmail(String to, String subject, String htmlBody) {
+        try {
+            MimeMessage mimeMessage = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setTo(to);
+            helper.setFrom(yourEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlBody, true);
+            sender.send(mimeMessage);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void testSend() {
         sendSimpleEmail(yourEmail,
                 "zobaczmy teraz",
@@ -35,20 +50,5 @@ public class EmailService {
         message.setSubject(subject);
         message.setText(body);
         sender.send(message);
-    }
-
-    @Async
-    public void sendHtmlEmail(String to, String subject, String htmlBody) {
-        try {
-            MimeMessage mimeMessage = sender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            helper.setTo(to);
-            helper.setFrom(yourEmail);
-            helper.setSubject(subject);
-            helper.setText(htmlBody, true);
-            sender.send(mimeMessage);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
     }
 }

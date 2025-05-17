@@ -16,9 +16,38 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @GetMapping
+    public String getHomePage(@RequestParam(required = false) String message,
+                              Model model) {
+        model.addAttribute("message", message);
+        provideEmail(model);
+        return "index";
+    }
+
+    private void provideEmail(Model model) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User) {
+            User user = (User) principal;
+            model.addAttribute("email", user.getUsername());
+        }
+    }
+
     @GetMapping("/register")
     public String getRegisterPage() {
         return "register";
+    }
+
+    @PostMapping("/register")
+    public String postAccount(@ModelAttribute Account account, RedirectAttributes redirectAttributes, Model model) {
+        try {
+            authService.register(account);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("message", e.getMessage());
+            return "register";
+        }
+        redirectAttributes.addAttribute("message", "Udało Ci się zarejestrować nowe konto," +
+                " możesz się teraz zalogować");
+        return "redirect:/";
     }
 
     @GetMapping("/change")
@@ -34,7 +63,7 @@ public class AuthController {
             return "redirect:/";
         } catch (IllegalArgumentException e) {
             model.addAttribute("message", e.getMessage());
-            return "register";
+            return "change-password";
         }
     }
 
@@ -51,38 +80,10 @@ public class AuthController {
         return "redirect:/";
     }
 
-    @PostMapping("/register")
-    public String postAccount(@ModelAttribute Account account, RedirectAttributes redirectAttributes, Model model) {
-        try {
-            authService.register(account);
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("message", e.getMessage());
-            return "register";
-        }
-        redirectAttributes.addAttribute("message", "Udało Ci się zarejestrować nowe konto," +
-                " możesz się teraz zalogować");
-        return "redirect:/";
-    }
-
 
     @GetMapping("/login")
     public String getLoginPage() {
         return "login";
     }
 
-    @GetMapping
-    public String getHomePage(@RequestParam(required = false) String message,
-                              Model model) {
-        model.addAttribute("message", message);
-        provideEmail(model);
-        return "index";
-    }
-
-    private void provideEmail(Model model) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof User) {
-            User user = (User) principal;
-            model.addAttribute("email", user.getUsername());
-        }
-    }
 }

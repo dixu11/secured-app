@@ -20,10 +20,11 @@ public class AuthService implements UserDetailsService {
     private ChangePasswordJpaRepository changePasswordJpaRepository;
     private EmailService emailService;
 
-    private static final String WRONG_PASSWORD = "Hasło nie spełnia wymogów: minimum 1 mała litera, 1 specjalny znak, jedna cyfra długość od 8 do 20 znaków.";
-
     @Value("${your.domain}")
     private String domain;
+
+    private static final String WRONG_PASSWORD = "Hasło nie spełnia wymogów: minimum 1 mała litera, " +
+            "1 specjalny znak, jedna cyfra długość od 8 do 20 znaków.";
 
     private static final String PASSWORD_REGEX =
             "^(?=.*[a-z])" +          // minimum 1 small letter
@@ -64,8 +65,10 @@ public class AuthService implements UserDetailsService {
                         changePasswordJpaRepository.delete(changePassword);
                     }
                 });
-        ChangePassword changed = changePasswordJpaRepository.save(new ChangePassword(account.getEmail(), passwordEncoder.encode(account.getPassword())));
-        String message = "Link do zmiany hasła: <a href=\"https://" +domain + "/change/" + changed.getId() +
+        ChangePassword changed = changePasswordJpaRepository.save(new ChangePassword(account.getEmail(),
+                passwordEncoder.encode(account.getPassword())));
+        String message = "Link do zmiany hasła: <a href=\"https://"
+                +domain + "/change/" + changed.getId() +
                 "\"> kliknij aby zmienić hasło</a>";
         emailService.sendHtmlEmail(account.getEmail(),"Zmiana hasła", message);
     }
